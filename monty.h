@@ -39,6 +39,10 @@ extern stack_t *head = NULL;
 /** functions**/
 void print(stack_t **, unsigned int);
 void push(stack_t **, unsigned int);
+void print_top(stack_t **, unsigned int);
+void pop(stack_t **, unsigned int);
+void nop(stack_t **, unsigned int);
+void swap(stack_t **, unsigned int);
 stack_t *create_Snode(int);
 void free_nodes(void);
 void open_file(char *);
