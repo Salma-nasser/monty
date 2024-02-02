@@ -25,15 +25,18 @@ int main(int ac, char **av)
 		free_all();
 		return (EXIT_FAILURE);
 	}
-	while (fgets(var.buff, BUFFER_SIZE, var.file) != NULL)
+	while (fgets(var.buff, var.tmp, var.file) != NULL)
 	{
+		var.buff[strcspn(var.buff, "\n")] = '\0';
 		opcode = strtok(var.buff, " \r\t\n");
 		if (opcode != NULL)
+		{
 			if (call_funct(&var, opcode) == EXIT_FAILURE)
 			{
 				free_all();
 				return (EXIT_FAILURE);
 			}
+		}
 		var.line_number++;
 	}
 	free_all();

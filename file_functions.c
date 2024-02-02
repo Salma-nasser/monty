@@ -1,5 +1,4 @@
 #include "monty.h"
-
 /**
  * start_vars - Fake rand to jackpoint Giga Millions
  * @var: Global variables to initialize
@@ -19,7 +18,6 @@ int start_vars(vars *var)
 
 	return (EXIT_SUCCESS);
 }
-
 /**
  * create_instru - Create new functions dictionary
  * Return: Dictionary pointer
@@ -44,7 +42,6 @@ instruction_t *create_instru()
 
 	return (ptr);
 }
-
 /**
  * call_funct - Call Functions
  * @var: Global variables
@@ -72,8 +69,6 @@ int call_funct(vars *var, char *opcode)
 
 	return (EXIT_SUCCESS);
 }
-
-
 /**
  * free_all - Clean all program mallocs
  * Return: None
@@ -95,7 +90,6 @@ void free_all(void)
 		free(var.head);
 	}
 }
-
 /**
  * _isdigit - Clean all program mallocs
  * @string: Num to validate
