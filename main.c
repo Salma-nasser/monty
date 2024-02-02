@@ -1,44 +1,45 @@
 #include "monty.h"
-#define BUFFER_SIZE 1024
-vars var;
+bus_t bus = {NULL, NULL, NULL, 0};
 /**
- * main - Start LIFO, FILO program
- * @ac: Number of arguments
- * @av: Pointer containing arguments
- * Return: 0 Success, 1 Failed
- */
-int main(int ac, char **av)
+* main - monty code interpreter
+* @argc: number of arguments
+* @argv: monty file location
+* Return: 0 on success
+*/
+int main(int argc, char *argv[])
 {
-	char *opcode;
+	char *content;
+	FILE *file;
+	size_t size = 0;
+	ssize_t read_line = 1;
+	stack_t *stack = NULL;
+	unsigned int counter = 0;
 
-	if (ac != 2)
+	if (argc != 2)
 	{
 		fprintf(stderr, "USAGE: monty file\n");
-		return (EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
-	if (start_vars(&var) != 0)
-		return (EXIT_FAILURE);
-	var.file = fopen(av[1], "r");
-	if (!var.file)
+	file = fopen(argv[1], "r");
+	bus.file = file;
+	if (!file)
 	{
-		fprintf(stderr, "Error: Can't open file %s\n", av[1]);
-		free_all();
-		return (EXIT_FAILURE);
+		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+		exit(EXIT_FAILURE);
 	}
-	while (fgets(var.buff, var.tmp, var.file) != NULL)
+	while (read_line > 0)
 	{
-		var.buff[strcspn(var.buff, "\n")] = '\0';
-		opcode = strtok(var.buff, " \r\t\n");
-		if (opcode != NULL)
+		content = NULL;
+		read_line = getline(&content, &size, file);
+		bus.content = content;
+		counter++;
+		if (read_line > 0)
 		{
-			if (call_funct(&var, opcode) == EXIT_FAILURE)
-			{
-				free_all();
-				return (EXIT_FAILURE);
-			}
+			execute(content, &stack, counter, file);
 		}
-		var.line_number++;
+		free(content);
 	}
-	free_all();
-	return (EXIT_SUCCESS);
+	free_stack(stack);
+	fclose(file);
+return (0);
 }

@@ -1,101 +1,108 @@
 #include "monty.h"
 /**
- * pall - Print list
- * @stack: Double linked list
- * @line_number: File line execution
- */
-void pall(stack_t **stack, unsigned int line_number)
-{
-	stack_t *tmp = *stack;
-	(void) line_number;
-
-	if (!tmp)
-		return;
-	while (tmp)
-	{
-		printf("%d\n", tmp->n);
-		tmp = tmp->next;
-	}
-}
-
-/**
- * push - Insert a new value in list
- * @stack: Double linked list
- * @line_number: File line execution
- */
-void push(stack_t **stack, unsigned int line_number)
-{
-	stack_t *tmp = NULL, *tm = *stack;
-	char *num;
-
-	num = strtok(NULL, " \r\t\n");
-	if (num == NULL || (_isdigit(num) != 0 && num[0] != '-'))
-	{
-		fprintf(stderr, "L%u: usage: push integer\n", line_number);
-		free_all();
-		exit(EXIT_FAILURE);
-	}
-	tmp = malloc(sizeof(stack_t));
-	if (!tmp)
-	{
-		fprintf(stderr, "Error: malloc failed\n");
-		free_all();
-		exit(EXIT_FAILURE);
-	}
-	tmp->n = atoi(num);
-	if (var.MODE == 0 || !*stack)
-	{
-		tmp->next = *stack;
-		tmp->prev = NULL;
-		if (*stack)
-			(*stack)->prev = tmp;
-		*stack = tmp;
-	}
-	else
-	{
-		while (tm->next)
-			tm = tm->next;
-		tm->next = tmp;
-		tmp->prev = tm;
-		tmp->next = NULL;
-	}
-}
-
-/**
- * pint - Print last node
- * @stack: Double linked list
- * @line_number: File line execution
- */
-void pint(stack_t **stack, unsigned int line_number)
-{
-	if (!*stack)
-	{
-		fprintf(stderr, "L%u: can't pint, stack empty\n", line_number);
-		free_all();
-		exit(EXIT_FAILURE);
-	}
-	printf("%d\n", (*stack)->n);
-}
-
-/**
-* pop - Delete top of list
-* @stack: Double linked list
-* @line_number: File line execution
+ * f_push - add node to the stack
+ * @head: stack head
+ * @counter: line_number
+ * Return: no return
 */
-void pop(stack_t **stack, unsigned int line_number)
+void f_push(stack_t **head, unsigned int counter)
 {
-	stack_t *tmp;
+	int n, j = 0, flag = 0;
 
-	if (!*stack)
+	if (bus.arg)
 	{
-		fprintf(stderr, "L%u: can't pop an empty stack\n", line_number);
-		free_all();
+		if (bus.arg[0] == '-')
+			j++;
+		for (; bus.arg[j] != '\0'; j++)
+		{
+			if (bus.arg[j] > 57 || bus.arg[j] < 48)
+				flag = 1; }
+		if (flag == 1)
+		{ fprintf(stderr, "L%d: usage: push integer\n", counter);
+			fclose(bus.file);
+			free(bus.content);
+			free_stack(*head);
+			exit(EXIT_FAILURE); }}
+	else
+	{ fprintf(stderr, "L%d: usage: push integer\n", counter);
+		fclose(bus.file);
+		free(bus.content);
+		free_stack(*head);
+		exit(EXIT_FAILURE); }
+	n = atoi(bus.arg);
+	if (bus.lifi == 0)
+		addnode(head, n);
+	else
+		addqueue(head, n);
+}
+/**
+ * f_pall - prints the stack
+ * @head: stack head
+ * @counter: no used
+ * Return: no return
+*/
+void f_pall(stack_t **head, unsigned int counter)
+{
+	stack_t *h;
+	(void)counter;
+
+	h = *head;
+	if (h == NULL)
+		return;
+	while (h)
+	{
+		printf("%d\n", h->n);
+		h = h->next;
+	}
+}
+/**
+ * f_pint - prints the top
+ * @head: stack head
+ * @counter: line_number
+ * Return: no return
+*/
+void f_pint(stack_t **head, unsigned int counter)
+{
+	if (*head == NULL)
+	{
+		fprintf(stderr, "L%u: can't pint, stack empty\n", counter);
+		fclose(bus.file);
+		free(bus.content);
+		free_stack(*head);
 		exit(EXIT_FAILURE);
 	}
+	printf("%d\n", (*head)->n);
+}
+/**
+ * f_pop - prints the top
+ * @head: stack head
+ * @counter: line_number
+ * Return: no return
+*/
+void f_pop(stack_t **head, unsigned int counter)
+{
+	stack_t *h;
 
-	tmp = *stack;
-	*stack = tmp->next;
-	if (tmp->next)
-		tmp->next->prev = NULL;
-	free(tmp);
+	if (*head == NULL)
+	{
+		fprintf(stderr, "L%d: can't pop an empty stack\n", counter);
+		fclose(bus.file);
+		free(bus.content);
+		free_stack(*head);
+		exit(EXIT_FAILURE);
+	}
+	h = *head;
+	*head = h->next;
+	free(h);
+}
+/**
+  *f_nop- nothing
+  *@head: stack head
+  *@counter: line_number
+  *Return: no return
+ */
+void f_nop(stack_t **head, unsigned int counter)
+{
+	(void) counter;
+	(void) head;
 }

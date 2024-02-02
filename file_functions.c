@@ -1,108 +1,116 @@
 #include "monty.h"
 /**
- * start_vars - Fake rand to jackpoint Giga Millions
- * @var: Global variables to initialize
- * Return: 0 Success, 1 Failed
- */
-int start_vars(vars *var)
+* free_stack - frees a doubly linked list
+* @head: head of the stack
+*/
+void free_stack(stack_t *head)
 {
-	var->file = NULL;
-	var->buff = NULL;
-	var->tmp = 0;
-	var->dict = create_instru();
-	if (var->dict == NULL)
-		return (EXIT_FAILURE);
-	var->head = NULL;
-	var->line_number = 1;
-	var->MODE = 0;
+	stack_t *aux;
 
-	return (EXIT_SUCCESS);
-}
-/**
- * create_instru - Create new functions dictionary
- * Return: Dictionary pointer
- */
-instruction_t *create_instru()
-{
-	instruction_t *ptr = malloc(sizeof(instruction_t) * 18);
-
-	if (!ptr)
+	aux = head;
+	while (head)
 	{
-		fprintf(stderr, "Error: malloc failed\n");
-		return (NULL);
+		aux = head->next;
+		free(head);
+		head = aux;
 	}
-	ptr[0].opcode = "pall", ptr[0].f = pall;
-	ptr[1].opcode = "push", ptr[1].f = push;
-	ptr[2].opcode = "pint", ptr[2].f = pint;
-	ptr[3].opcode = "pop", ptr[3].f = pop;
-	ptr[4].opcode = "swap", ptr[4].f = swap;
-	ptr[5].opcode = "add", ptr[5].f = add;
-	ptr[6].opcode = "nop", ptr[6].f = NULL;
-	ptr[17].opcode = NULL, ptr[17].f = NULL;
-
-	return (ptr);
 }
 /**
- * call_funct - Call Functions
- * @var: Global variables
- * @opcode: Command to execute
- * Return: None
- */
-int call_funct(vars *var, char *opcode)
+* execute - executes the opcode
+* @stack: head linked list - stack
+* @counter: line_counter
+* @file: poiner to monty file
+* @content: line content
+* Return: no return
+*/
+int execute(char *content, stack_t **stack, unsigned int counter, FILE *file)
 {
-	int i;
+	instruction_t opst[] = {
+				{"push", f_push}, {"pall", f_pall}, {"pint", f_pint},
+				{"pop", f_pop},
+				{"swap", f_swap},
+				{"add", f_add},
+				{"nop", f_nop},
+				{NULL, NULL}
+				};
+	unsigned int i = 0;
+	char *op;
 
-	for (i = 0; var->dict[i].opcode; i++)
-		if (strcmp(opcode, var->dict[i].opcode) == 0)
-		{
-			if (!var->dict[i].f)
-				return (EXIT_SUCCESS);
-			var->dict[i].f(&var->head, var->line_number);
-			return (EXIT_SUCCESS);
+	op = strtok(content, " \n\t");
+	if (op && op[0] == '#')
+		return (0);
+	bus.arg = strtok(NULL, " \n\t");
+	while (opst[i].opcode && op)
+	{
+		if (strcmp(op, opst[i].opcode) == 0)
+		{	opst[i].f(stack, counter);
+			return (0);
 		}
-	if (strlen(opcode) != 0 && opcode[0] != '#')
-	{
-		fprintf(stderr, "L%u: unknown instruction %s\n",
-			var->line_number, opcode);
-		return (EXIT_FAILURE);
+		i++;
 	}
-
-	return (EXIT_SUCCESS);
+	if (op && opst[i].opcode == NULL)
+	{ fprintf(stderr, "L%d: unknown instruction %s\n", counter, op);
+		fclose(file);
+		free(content);
+		free_stack(*stack);
+		exit(EXIT_FAILURE); }
+	return (1);
 }
 /**
- * free_all - Clean all program mallocs
- * Return: None
- */
-void free_all(void)
+ * addnode - add node to the head stack
+ * @head: head of the stack
+ * @n: new_value
+ * Return: no return
+*/
+void addnode(stack_t **head, int n)
 {
-	if (var.buff != NULL)
-		free(var.buff);
-	if (var.file != NULL)
-		fclose(var.file);
-	free(var.dict);
-	if (var.head != NULL)
-	{
-		while (var.head->next != NULL)
-		{
-			var.head = var.head->next;
-			free(var.head->prev);
-		}
-		free(var.head);
-	}
+
+	stack_t *new_node, *aux;
+
+	aux = *head;
+	new_node = malloc(sizeof(stack_t));
+	if (new_node == NULL)
+	{ printf("Error\n");
+		exit(0); }
+	if (aux)
+		aux->prev = new_node;
+	new_node->n = n;
+	new_node->next = *head;
+	new_node->prev = NULL;
+	*head = new_node;
 }
 /**
- * _isdigit - Clean all program mallocs
- * @string: Num to validate
- * Return: 0 Success, 1 Failed
- */
-int _isdigit(char *string)
+ * addqueue - add node to the tail stack
+ * @n: new_value
+ * @head: head of the stack
+ * Return: no return
+*/
+void addqueue(stack_t **head, int n)
 {
-	int i;
+	stack_t *new_node, *aux;
 
-	for (i = 0; string[i]; i++)
+	aux = *head;
+	new_node = malloc(sizeof(stack_t));
+	if (new_node == NULL)
 	{
-		if (string[i] < 48 || string[i] > 57)
-			return (1);
+		printf("Error\n");
 	}
-	return (0);
+	new_node->n = n;
+	new_node->next = NULL;
+	if (aux)
+	{
+		while (aux->next)
+			aux = aux->next;
+	}
+	if (!aux)
+	{
+		*head = new_node;
+		new_node->prev = NULL;
+	}
+	else
+	{
+		aux->next = new_node;
+		new_node->prev = aux;
+	}
 }
+
